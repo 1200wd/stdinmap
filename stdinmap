@@ -1,0 +1,29 @@
+#!/usr/bin/python
+
+import sys
+import ConfigParser
+import re
+import subprocess
+
+if __name__ == '__main__':
+	key = sys.stdin.readlines()[0].strip()
+
+	if key == None:
+		raise Exception('Supply key value on stdin')
+
+	Config = ConfigParser.ConfigParser()
+	Config.read('stdinmap.ini')
+
+	# walk config keys
+	for option, cmd in Config.items('cmds'):
+		# see if input matches config key
+		match = re.search(option, key)
+		if match:
+			# replace {key} with input in cmd
+			cmd = cmd.replace('{key}', match.group(0))
+
+			# exec cmd
+			p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+			for line in iter(p.stdout.readline, ''):
+				print line,
+
